@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Smart Hospital Queue</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:           #eef2f7;
+  --surface:      #ffffff;
+  --surface-2:    #f6f8fb;
+  --border:       #dde3ed;
+  --border-soft:  #eaeff6;
+
+  --navy:         #0b1f45;
+  --navy-mid:     #152d5e;
+  --blue:         #1a56db;
+  --blue-soft:    #e8f0fe;
+  --blue-glow:    rgba(26,86,219,0.15);
+
+  --red:          #c0392b;
+  --red-soft:     #fff0ef;
+  --red-border:   #fccaca;
+
+  --orange:       #c0580a;
+  --orange-soft:  #fff5ee;
+  --orange-border:#fcd7b4;
+
+  --amber:        #92600a;
+  --amber-soft:   #fefce8;
+  --amber-border: #fde68a;
+
+  --green:        #15643a;
+  --green-soft:   #edfaf3;
+  --green-border: #a7f3d0;
+
+  --text-1: #0b1f45;
+  --text-2: #4a5568;
+  --text-3: #8a94a6;
+
+  --shadow-xs: 0 1px 3px rgba(11,31,69,0.06);
+  --shadow-sm: 0 2px 8px rgba(11,31,69,0.08);
+  --shadow-md: 0 6px 24px rgba(11,31,69,0.10);
+  --shadow-lg: 0 16px 48px rgba(11,31,69,0.13);
+
+  --r-xl: 20px;
+  --r-lg: 14px;
+  --r-md: 10px;
+  --r-sm: 7px;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+  min-height: 100vh;
+}
+
+/* HEADER */
+header {
+  background: var(--navy);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.header-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-icon {
+  width: 44px;
+  height: 44px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(26,86,219,0.35), inset 0 1px 0 rgba(255,255,255,0.1);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.brand-icon:hover { transform: scale(1.06); }
+
+.brand-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.4px;
+  line-height: 1.15;
+}
+
+.brand-name span { color: #60a5fa; }
+
+.brand-sub {
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.45);
+  font-weight: 400;
+  letter-spacing: 0.2px;
+  margin-top: 1px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.live-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 14px;
+  border-radius: 100px;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  background: #4ade80;
+  border-radius: 50%;
+  animation: livePulse 2s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74,222,128,0.4); }
+  50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(74,222,128,0); }
+}
+
+.live-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.header-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+}
+
+/* CONTAINER */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 36px 32px;
+}
+
+/* STATS */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-xs);
+  transition: box-shadow 0.2s, transform 0.2s;
+  cursor: default;
+  animation: fadeSlideUp 0.5s ease both;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.05s; }
+.stat-card:nth-child(2) { animation-delay: 0.10s; }
+.stat-card:nth-child(3) { animation-delay: 0.15s; }
+.stat-card:nth-child(4) { animation-delay: 0.20s; }
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.stat-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.stat-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.s-total   .stat-icon-wrap { background: var(--blue-soft); }
+.s-emerg   .stat-icon-wrap { background: var(--red-soft); }
+.s-serious .stat-icon-wrap { background: var(--orange-soft); }
+.s-normal  .stat-icon-wrap { background: var(--green-soft); }
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--text-3);
+  margin-bottom: 4px;
+}
+
+.stat-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.s-total   .stat-num { color: var(--blue); }
+.s-emerg   .stat-num { color: var(--red); }
+.s-serious .stat-num { color: var(--orange); }
+.s-normal  .stat-num { color: var(--green); }
+
+/* MAIN GRID */
+.main-grid {
+  display: grid;
+  grid-template-columns: 500px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* CARD */
+.card {
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: fadeSlideUp 0.5s ease 0.2s both;
+}
+
+.card-head {
+  padding: 22px 28px 18px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-2);
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.3px;
+}
+
+.card-subtitle {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+.card-chip {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  padding: 5px 12px;
+  border-radius: 100px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  border: 1px solid rgba(26,86,219,0.15);
+}
+
+.card-body { padding: 28px; }
+
+/* FORM */
+.form-step {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+
+.step-num {
+  width: 28px;
+  height: 28px;
+  background: var(--navy);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.step-content { flex: 1; }
+
+.step-row {
+  display: grid;
+  grid-template-columns: 1fr 110px;
+  gap: 10px;
+}
+
+.field-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 8px;
+}
+
+.field-hint {
+  font-size: 11px;
+  color: var(--text-3);
+  font-weight: 400;
+  margin-left: 6px;
+}
+
+input[type="text"],
+input[type="number"],
+textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-family: 'Outfit', sans-serif;
+  color: var(--text-1);
+  background: var(--surface);
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  appearance: none;
+}
+
+input[type="text"]::placeholder,
+input[type="number"]::placeholder,
+textarea::placeholder { color: var(--text-3); font-weight: 400; }
+
+input[type="text"]:hover,
+input[type="number"]:hover,
+textarea:hover { border-color: #b0bad4; }
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+  background: #fafcff;
+  box-shadow: 0 0 0 4px var(--blue-glow);
+}
+
+textarea {
+  height: 110px;
+  resize: none;
+  line-height: 1.65;
+}
+
+.char-count {
+  text-align: right;
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 5px;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border-soft);
+  margin: 20px 0;
+}
+
+/* SUBMIT BUTTON */
+.submit-btn {
+  width: 100%;
+  padding: 15px 20px;
+  background: linear-gradient(135deg, var(--navy-mid), var(--navy));
+  color: white;
+  border: none;
+  border-radius: var(--r-md);
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(11,31,69,0.25);
+}
+
+.submit-btn:hover:not(:disabled) {
+  opacity: 0.93;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(11,31,69,0.3);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(11,31,69,0.2);
+}
+
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+  display: none;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* RESULT TICKET */
+.result-ticket {
+  margin-top: 22px;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  display: none;
+  animation: ticketIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+  border: 1.5px solid transparent;
+}
+
+@keyframes ticketIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.ticket-top {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ticket-token {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.ticket-priority-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.ticket-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px 20px;
+  background: rgba(255,255,255,0.75);
+  border-top: 1px dashed;
+}
+
+.tf-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-3);
+  margin-bottom: 3px;
+}
+
+.tf-value {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-1);
+}
+
+.ticket-ai {
+  grid-column: 1 / -1;
+  background: rgba(11,31,69,0.04);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+}
+
+.ticket-ai .tf-value {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.tp-1 { background: var(--red-soft); border-color: var(--red-border); }
+.tp-1 .ticket-top { background: var(--red-soft); }
+.tp-1 .ticket-token { color: var(--red); }
+.tp-1 .ticket-priority-tag { background: var(--red); color: white; }
+.tp-1 .ticket-grid { border-color: var(--red-border); }
+
+.tp-2 { background: var(--orange-soft); border-color: var(--orange-border); }
+.tp-2 .ticket-top { background: var(--orange-soft); }
+.tp-2 .ticket-token { color: var(--orange); }
+.tp-2 .ticket-priority-tag { background: var(--orange); color: white; }
+.tp-2 .ticket-grid { border-color: var(--orange-border); }
+
+.tp-3 { background: var(--amber-soft); border-color: var(--amber-border); }
+.tp-3 .ticket-top { background: var(--amber-soft); }
+.tp-3 .ticket-token { color: var(--amber); }
+.tp-3 .ticket-priority-tag { background: var(--amber); color: white; }
+.tp-3 .ticket-grid { border-color: var(--amber-border); }
+
+.tp-4 { background: var(--green-soft); border-color: var(--green-border); }
+.tp-4 .ticket-top { background: var(--green-soft); }
+.tp-4 .ticket-token { color: var(--green); }
+.tp-4 .ticket-priority-tag { background: var(--green); color: white; }
+.tp-4 .ticket-grid { border-color: var(--green-border); }
+
+/* QUEUE PANEL */
+.queue-action-bar {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--surface-2);
+}
+
+.call-btn {
+  width: 100%;
+  padding: 13px 20px;
+  background: var(--red-soft);
+  color: var(--red);
+  border: 1.5px solid var(--red-border);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.call-btn:hover {
+  background: #fce4e1;
+  border-color: #e57368;
+  transform: translateY(-1px);
+}
+
+.call-btn:active { transform: translateY(0); }
+
+.queue-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 28px 0;
+}
+
+.queue-count-text {
+  font-size: 12px;
+  color: var(--text-3);
+  font-weight: 500;
+}
+
+.queue-legend {
+  display: flex;
+  gap: 12px;
+}
+
+.legend-dot {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-3);
+  font-weight: 500;
+}
+
+.legend-dot::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ld-red::before    { background: var(--red); }
+.ld-orange::before { background: var(--orange); }
+.ld-amber::before  { background: var(--amber); }
+.ld-green::before  { background: var(--green); }
+
+.queue-list {
+  max-height: 530px;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.queue-list::-webkit-scrollbar { width: 4px; }
+.queue-list::-webkit-scrollbar-track { background: transparent; }
+.queue-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.queue-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--r-lg);
+  border: 1.5px solid transparent;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  cursor: default;
+}
+
+.queue-item:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-sm);
+}
+
+.qi-1 { background: var(--red-soft);    border-color: var(--red-border); }
+.qi-2 { background: var(--orange-soft); border-color: var(--orange-border); }
+.qi-3 { background: var(--amber-soft);  border-color: var(--amber-border); }
+.qi-4 { background: var(--green-soft);  border-color: var(--green-border); }
+
+.qi-token {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+  color: white;
+}
+
+.qi-1 .qi-token { background: var(--red); }
+.qi-2 .qi-token { background: var(--orange); }
+.qi-3 .qi-token { background: var(--amber); }
+.qi-4 .qi-token { background: var(--green); }
+
+.qi-body { flex: 1; min-width: 0; }
+
+.qi-name {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qi-details {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+
+.qi-pill {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.7);
+  color: var(--text-2);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.qi-rank {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+  background: rgba(255,255,255,0.6);
+  padding: 2px 7px;
+  border-radius: 100px;
+  flex-shrink: 0;
+}
+
+.next-badge {
+  position: absolute;
+  top: -8px;
+  left: 20px;
+  background: var(--navy);
+  color: white;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 100px;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 20px;
+  gap: 10px;
+}
+
+.empty-icon { font-size: 40px; opacity: 0.3; }
+
+.empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+.empty-sub {
+  font-size: 13px;
+  color: var(--text-3);
+  font-weight: 400;
+}
+
+/* RESPONSIVE */
+@media (max-width: 980px) {
+  .main-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 700px) {
+  .container { padding: 20px 16px; }
+  .header-inner { padding: 0 16px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .header-time { display: none; }
+  .step-row { grid-template-columns: 1fr 90px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="26" height="28" viewBox="0 0 26 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 1L2 5.5V14C2 19.8 6.8 25.2 13 27C19.2 25.2 24 19.8 24 14V5.5L13 1Z" fill="url(#shieldGrad)" stroke="rgba(255,255,255,0.25)" stroke-width="0.5"/>
+          <rect x="11.5" y="8" width="3" height="11" rx="1.5" fill="white"/>
+          <rect x="7.5" y="12" width="11" height="3" rx="1.5" fill="white"/>
+          <defs>
+            <linearGradient id="shieldGrad" x1="2" y1="1" x2="24" y2="27" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#4a90e2"/>
+              <stop offset="100%" stop-color="#1a56db"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name"><span>AI Smart</span> Hospital Queue System</div>
+        <div class="brand-sub">Intelligent triage · Priority queue · Real-time management</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="live-pill">
+        <div class="live-dot"></div>
+        <span class="live-text">Live</span>
+      </div>
+      <div class="header-time" id="clock">--:--</div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="container">
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card s-total">
+      <div class="stat-icon-wrap">👥</div>
+      <div class="stat-body">
+        <div class="stat-label">Total Waiting</div>
+        <div class="stat-num" id="stat-total">0</div>
+      </div>
+    </div>
+    <div class="stat-card s-emerg">
+      <div class="stat-icon-wrap">🚨</div>
+      <div class="stat-body">
+        <div class="stat-label">Emergency</div>
+        <div class="stat-num" id="stat-emergency">0</div>
+      </div>
+    </div>
+    <div class="stat-card s-serious">
+      <div class="stat-icon-wrap">⚠️</div>
+      <div class="stat-body">
+        <div class="stat-label">Serious</div>
+        <div class="stat-num" id="stat-serious">0</div>
+      </div>
+    </div>
+    <div class="stat-card s-normal">
+      <div class="stat-icon-wrap">✅</div>
+      <div class="stat-body">
+        <div class="stat-label">Normal / Moderate</div>
+        <div class="stat-num" id="stat-normal">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- REGISTRATION -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title-wrap">
+          <div class="card-title">Patient Registration</div>
+          <div class="card-subtitle">Fill in details · AI assigns priority automatically</div>
+        </div>
+        <span class="card-chip">🤖 AI Triage</span>
+      </div>
+
+      <div class="card-body">
+
+        <div class="form-step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-row">
+              <div>
+                <label class="field-label" for="name">
+                  Patient Name <span class="field-hint">Full name</span>
+                </label>
+                <input type="text" id="name" placeholder="e.g. Ramesh Kumar" autocomplete="off" />
+              </div>
+              <div>
+                <label class="field-label" for="age">Age</label>
+                <input type="number" id="age" placeholder="Years" min="1" max="120" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-step" style="margin-bottom:0">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <label class="field-label" for="symptoms">
+              Describe Symptoms <span class="field-hint">Be as detailed as possible</span>
+            </label>
+            <textarea
+              id="symptoms"
+              placeholder="e.g. Severe chest pain and difficulty breathing since 2 hours. Pain radiates to left arm."
+              oninput="updateCharCount(this)"
+            ></textarea>
+            <div class="char-count"><span id="charCount">0</span> characters</div>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <button class="submit-btn" onclick="registerPatient()" id="regBtn">
+          <div class="spinner" id="spinner"></div>
+          <span class="btn-icon" id="btnIcon">🔍</span>
+          <span id="btnText">Analyze &amp; Register Patient</span>
+        </button>
+
+        <div id="result" class="result-ticket">
+          <div class="ticket-top">
+            <div class="ticket-token" id="res-token">—</div>
+            <div class="ticket-priority-tag" id="res-badge">—</div>
+          </div>
+          <div class="ticket-grid">
+            <div class="ticket-field">
+              <div class="tf-label">Patient</div>
+              <div class="tf-value" id="res-name">—</div>
+            </div>
+            <div class="ticket-field">
+              <div class="tf-label">Department</div>
+              <div class="tf-value" id="res-dept">—</div>
+            </div>
+            <div class="ticket-field">
+              <div class="tf-label">Estimated Wait</div>
+              <div class="tf-value" id="res-wait">—</div>
+            </div>
+            <div class="ticket-field">
+              <div class="tf-label">Queue Position</div>
+              <div class="tf-value" id="res-pos">—</div>
+            </div>
+            <div class="ticket-field ticket-ai">
+              <div class="tf-label">🤖 AI Assessment</div>
+              <div class="tf-value" id="res-reason">—</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- QUEUE -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title-wrap">
+          <div class="card-title">Live Priority Queue</div>
+          <div class="card-subtitle">Sorted by severity · Auto-refreshes every 10s</div>
+        </div>
+        <span class="card-chip" id="queue-chip">0 patients</span>
+      </div>
+
+      <div class="queue-action-bar">
+        <button class="call-btn" onclick="callNext()">
+          🔔&nbsp; Call Next Patient
+        </button>
+      </div>
+
+      <div class="queue-meta">
+        <span class="queue-count-text" id="queue-count-text">Queue is empty</span>
+        <div class="queue-legend">
+          <div class="legend-dot ld-red">Emergency</div>
+          <div class="legend-dot ld-orange">Serious</div>
+          <div class="legend-dot ld-amber">Moderate</div>
+          <div class="legend-dot ld-green">Normal</div>
+        </div>
+      </div>
+
+      <div class="queue-list" id="queue-list">
+        <div class="empty-state">
+          <div class="empty-icon">🗂️</div>
+          <div class="empty-title">Queue is empty</div>
+          <div class="empty-sub">Register a patient to get started</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = 'https://ai-smart-hospital-queue-system-production.up.railway.app/api';
+
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  const s = String(now.getSeconds()).padStart(2, '0');
+  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+function updateCharCount(el) {
+  document.getElementById('charCount').textContent = el.value.length;
+}
+
+async function registerPatient() {
+  const name     = document.getElementById('name').value.trim();
+  const age      = document.getElementById('age').value.trim();
+  const symptoms = document.getElementById('symptoms').value.trim();
+
+  if (!name || !age || !symptoms) {
+    shakeField(!name ? 'name' : !age ? 'age' : 'symptoms');
+    return;
+  }
+
+  const btn     = document.getElementById('regBtn');
+  const spinner = document.getElementById('spinner');
+  const btnText = document.getElementById('btnText');
+  const btnIcon = document.getElementById('btnIcon');
+
+  btn.disabled = true;
+  spinner.style.display = 'block';
+  btnIcon.style.display = 'none';
+  btnText.textContent = 'Analyzing with AI…';
+
+  try {
+    const res  = await fetch(`${API}/patients/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, age, symptoms })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    const p  = data.patient;
+    const ai = data.aiAnalysis;
+
+    const resultDiv = document.getElementById('result');
+    resultDiv.className = `result-ticket tp-${p.priority}`;
+    resultDiv.style.display = 'block';
+
+    document.getElementById('res-token').textContent  = `Token #${p.tokenNumber}`;
+    document.getElementById('res-badge').textContent  = p.priorityLabel.toUpperCase();
+    document.getElementById('res-name').textContent   = p.name;
+    document.getElementById('res-dept').textContent   = p.department;
+    document.getElementById('res-wait').textContent   = p.waitTime;
+    document.getElementById('res-pos').textContent    = `#${data.queuePosition} in line`;
+    document.getElementById('res-reason').textContent = ai.reason;
+
+    document.getElementById('name').value     = '';
+    document.getElementById('age').value      = '';
+    document.getElementById('symptoms').value = '';
+    document.getElementById('charCount').textContent = '0';
+
+    loadQueue();
+
+  } catch (err) {
+    alert('Error: ' + err.message);
+  } finally {
+    btn.disabled           = false;
+    spinner.style.display  = 'none';
+    btnIcon.style.display  = 'inline';
+    btnText.textContent    = 'Analyze & Register Patient';
+  }
+}
+
+function shakeField(id) {
+  const el = document.getElementById(id);
+  el.style.borderColor = '#c0392b';
+  el.style.boxShadow   = '0 0 0 4px rgba(192,57,43,0.15)';
+  el.focus();
+  setTimeout(() => {
+    el.style.borderColor = '';
+    el.style.boxShadow   = '';
+  }, 1800);
+}
+
+async function loadQueue() {
+  try {
+    const res   = await fetch(`${API}/queue/live`);
+    const data  = await res.json();
+    const queue = data.queue;
+
+    updateStats(queue);
+
+    const listDiv  = document.getElementById('queue-list');
+    const chip     = document.getElementById('queue-chip');
+    const countTxt = document.getElementById('queue-count-text');
+
+    chip.textContent     = `${queue.length} patient${queue.length !== 1 ? 's' : ''}`;
+    countTxt.textContent = queue.length === 0
+      ? 'Queue is empty'
+      : `${queue.length} patient${queue.length !== 1 ? 's' : ''} waiting`;
+
+    if (queue.length === 0) {
+      listDiv.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🗂️</div>
+          <div class="empty-title">Queue is empty</div>
+          <div class="empty-sub">Register a patient to get started</div>
+        </div>`;
+      return;
+    }
+
+    listDiv.innerHTML = queue.map((p, i) => `
+      <div class="queue-item qi-${p.priority}">
+        ${i === 0 ? '<span class="next-badge">Next</span>' : ''}
+        <div class="qi-token">#${p.tokenNumber}</div>
+        <div class="qi-body">
+          <div class="qi-name">${p.name}</div>
+          <div class="qi-details">
+            <span class="qi-pill">${p.department}</span>
+            <span class="qi-pill">⏱ ${p.waitTime}</span>
+            <span class="qi-pill">${p.priorityLabel}</span>
+          </div>
+        </div>
+        <span class="qi-rank">${i + 1}</span>
+      </div>
+    `).join('');
+
+  } catch (err) {
+    document.getElementById('queue-list').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <div class="empty-title">Could not load queue</div>
+        <div class="empty-sub">Check server connection</div>
+      </div>`;
+  }
+}
+
+function updateStats(queue) {
+  document.getElementById('stat-total').textContent     = queue.length;
+  document.getElementById('stat-emergency').textContent = queue.filter(p => p.priority === 1).length;
+  document.getElementById('stat-serious').textContent   = queue.filter(p => p.priority === 2).length;
+  document.getElementById('stat-normal').textContent    = queue.filter(p => p.priority >= 3).length;
+}
+
+async function callNext() {
+  try {
+    const res  = await fetch(`${API}/queue/next`, { method: 'POST' });
+    const data = await res.json();
+    if (data.calledPatient) {
+      alert(`🔔 Calling: ${data.calledPatient.name}\nToken #${data.calledPatient.tokenNumber} · ${data.calledPatient.department}`);
+      loadQueue();
+    } else {
+      alert('Queue is currently empty!');
+    }
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+loadQueue();
+setInterval(loadQueue, 10000);
+</script>
+</body>
+</html>
