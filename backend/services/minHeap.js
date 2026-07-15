@@ -46,6 +46,29 @@ class MinHeap {
     return [...this.heap].sort((a, b) => a.priority - b.priority);
   }
 
+  getByDepartment() {
+    const grouped = {};
+    for (const p of this.getAll()) {
+      if (!grouped[p.department]) grouped[p.department] = [];
+      grouped[p.department].push(p);
+    }
+    return grouped;
+  }
+
+  extractMinByDepartment(department) {
+    const deptPatients = this.heap.filter(p => p.department === department);
+    if (deptPatients.length === 0) return null;
+
+    const next = deptPatients.reduce((min, p) => (p.priority < min.priority ? p : min), deptPatients[0]);
+
+    this.heap = this.heap.filter(p => p.id !== next.id);
+    const remaining = this.heap;
+    this.heap = [];
+    remaining.forEach(p => this.insert(p));
+
+    return next;
+  }
+
   size() {
     return this.heap.length;
   }

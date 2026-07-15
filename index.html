@@ -954,8 +954,7 @@ textarea {
 </div>
 
 <script>
-const API = 'https://ai-smart-hospital-queue-system-production.up.railway.app/api';
-
+const API = `${window.location.origin}/api`;
 function updateClock() {
   const now = new Date();
   const h = String(now.getHours()).padStart(2, '0');

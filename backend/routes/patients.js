@@ -44,6 +44,9 @@ router.post('/register', async (req, res) => {
       aiAnalysis: aiResult,
       queuePosition: minHeap.getAll().findIndex(p => p.id === patient._id.toString()) + 1
     });
+
+    const io = req.app.get('io');
+    io.emit('queueUpdate', { queue: minHeap.getAll(), byDepartment: minHeap.getByDepartment() });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Registration failed: ' + err.message });
@@ -63,6 +66,9 @@ router.put('/done/:id', async (req, res) => {
   try {
     await Patient.findByIdAndUpdate(req.params.id, { status: 'Done' });
     res.json({ success: true });
+
+    const io = req.app.get('io');
+    io.emit('queueUpdate', { queue: minHeap.getAll(), byDepartment: minHeap.getByDepartment() });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
